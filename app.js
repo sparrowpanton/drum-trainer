@@ -7,8 +7,8 @@
  *     stamped with a precise Web Audio clock time. setTimeout is allowed to be
  *     sloppy; the audio times it writes are not.
  *   - A separate requestAnimationFrame loop drives the visuals, reading the
- *     audio clock to place the bouncing ball. Audio and video are decoupled,
- *     so a janky frame never nudges the timing.
+ *     audio clock to light up the current letter. Audio and video are
+ *     decoupled, so a janky frame never nudges the timing.
  */
 
 const audio = new DrumAudio();
@@ -16,10 +16,6 @@ const audio = new DrumAudio();
 // --- scheduler tuning ---
 const LOOKAHEAD = 25;          // ms between scheduler wake-ups
 const SCHEDULE_AHEAD = 0.10;   // seconds of audio scheduled in advance
-
-// --- ball geometry (kept in sync with CSS) ---
-const BALL_SIZE = 38;          // px diameter
-const BALL_BOUNCE_PX = 46;     // px height of the bounce arc
 
 // --- state ---
 let pattern = PATTERNS[0];
@@ -37,11 +33,7 @@ let timerID = null;            // setTimeout handle
 let rafID = null;              // requestAnimationFrame handle
 
 let noteQueue = [];            // scheduled notes the visual clock hasn't reached
-let ballStep = 0;              // step the ball currently sits on
-let ballStepTime = 0;          // audio time the ball arrived on that step
-let activeCellIndex = -1;
-
-let cellCenters = [];          // x (px) of each step's centre, relative to gridArea
+let activeCellIndex = -1;      // which step is currently lit (the playhead)
 
 const el = {};
 const $ = (id) => document.getElementById(id);
@@ -102,39 +94,19 @@ function scheduler() {
 function draw() {
   const now = audio.currentTime;
 
-  // catch the ball up to whatever the audio clock has already passed
+  // advance the playhead to whatever the audio clock has already passed
   while (noteQueue.length && noteQueue[0].time <= now) {
     const n = noteQueue.shift();
     if (n.step === -1) {
       showCountIn(n.count);
     } else {
-      ballStep = n.step;
-      ballStepTime = n.time;
-      setActiveCell(n.step);
+      setActiveCell(n.step);   // the current letter swells — that's the playhead
       hideCountIn();
     }
   }
 
-  positionBall(now);
   updateElapsed(now);
   rafID = requestAnimationFrame(draw);
-}
-
-function positionBall(now) {
-  if (!cellCenters.length) return;
-  let f = (now - ballStepTime) / secondsPerStep();   // 0..1 through this step
-  if (f < 0) f = 0;
-  if (f > 1) f = 1;
-
-  const fromX = cellCenters[ballStep];
-  const nextStep = (ballStep + 1) % cellCenters.length;
-  // on the loop-around, bounce in place rather than sliding all the way back
-  const toX = nextStep === 0 ? fromX : cellCenters[nextStep];
-  const x = fromX + (toX - fromX) * f - BALL_SIZE / 2;
-
-  const bounce = 4 * f * (1 - f);                    // 0 at the note, 1 mid-step
-  const y = BALL_BOUNCE_PX * (1 - bounce);           // touches down on the note
-  el.ball.style.transform = `translate(${x}px, ${y}px)`;
 }
 
 // ---------------------------------------------------------------------------
@@ -166,20 +138,6 @@ function renderPattern() {
   }
 
   activeCellIndex = -1;
-  measureCells();
-  ballStep = 0;
-  ballStepTime = audio.currentTime;
-  positionBall(audio.currentTime);
-}
-
-function measureCells() {
-  const cells = el.handsLane.querySelectorAll('.cell');
-  if (!cells.length) { cellCenters = []; return; }
-  const base = el.gridArea.getBoundingClientRect();
-  cellCenters = Array.from(cells).map(c => {
-    const r = c.getBoundingClientRect();
-    return (r.left - base.left) + r.width / 2;
-  });
 }
 
 function setActiveCell(step) {
@@ -230,7 +188,6 @@ function play() {
   noteQueue = [];
   currentStep = 0;
   activeCellIndex = -1;
-  measureCells();
 
   const startAt = audio.currentTime + 0.06;   // brief lead-in so the first note schedules cleanly
   nextNoteTime = startAt;
@@ -261,7 +218,6 @@ function stop() {
   el.playBtn.classList.remove('playing');
   hideCountIn();
   clearActive();
-  el.ball.style.transform = `translate(-200px, 0px)`;   // park off-screen
 }
 
 function finish() { stop(); }   // reached the duration limit
@@ -292,8 +248,6 @@ function selectPattern(id, btn) {
 function init() {
   el.handsLane = $('handsLane');
   el.feetLane = $('feetLane');
-  el.ball = $('ball');
-  el.gridArea = $('gridArea');
   el.countIn = $('countIn');
   el.playBtn = $('playBtn');
   el.tempo = $('tempo');
@@ -325,7 +279,6 @@ function init() {
   el.countInToggle.addEventListener('change', () => { countInOn = el.countInToggle.checked; });
   el.playBtn.addEventListener('click', () => (isPlaying ? stop() : play()));
 
-  window.addEventListener('resize', measureCells);
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') { e.preventDefault(); isPlaying ? stop() : play(); }
   });

@@ -1,8 +1,9 @@
 # 🥁 Drum Play-Along Trainer
 
-A follow-the-bouncing-ball practice tool for drummers. Pick a pattern, set a
-tempo, hit play, and drum along while a bouncing ball walks you across the
-grid. Sesame Street energy, on purpose.
+A play-along practice tool for drummers. Pick a pattern, set a tempo, hit play,
+and drum along while the current letter jumps big and bold across the grid —
+one clear signal at a time. Sesame Street energy, on purpose, and built to be
+easy on autistic brains.
 
 **v1 — the play-along core.** Patterns ship in the code; the click-to-build
 editor is v2.
@@ -23,7 +24,7 @@ browsers need that one user click before they'll make sound.
 | File | Job |
 |------|-----|
 | `index.html` | structure + controls |
-| `styles.css` | the look (the bouncing ball, the grid) |
+| `styles.css` | the look (the grid, the jumping letter, the feet) |
 | `patterns.js` | **the pattern library + data format** |
 | `audio.js`    | synthesized kick / tap / click voices |
 | `app.js`      | the timing engine + rendering |
@@ -65,4 +66,5 @@ Both lanes must be the same length; that length is the number of grid steps.
 
 ---
 
-Built by Sparrow + Opus. Bouncing-ball layout after Alejandro's sketch. 🐿️
+Built by Sparrow + Opus. Letter-strip layout after Alejandro Sifuentes' Drumeo
+lessons. 🐿️
