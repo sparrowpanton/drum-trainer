@@ -114,6 +114,14 @@ body {
 .cell.hand.right { background: var(--right); }
 .cell.hand.left  { background: var(--left); }
 
+/* hand + foot land together: the letter goes dark + heavier, with a bar
+   along the bottom edge tying it down to the kick beneath it */
+.cell.hand.with-kick {
+  color: #241B18;
+  font-weight: 800;
+  box-shadow: inset 0 -7px 0 rgba(36,27,24,0.30);
+}
+
 .cell.foot.kick {
   background: radial-gradient(circle at 50% 40%, #9575CD, var(--kick));
   position: relative;

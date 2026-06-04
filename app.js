@@ -155,6 +155,8 @@ function renderPattern() {
     h.className = 'cell hand' + (beatStart ? ' beat-start' : '');
     const hv = pattern.hands[i];
     if (hv) { h.classList.add(hv === 'R' ? 'right' : 'left'); h.textContent = hv; }
+    // when a kick lands under this hand, mark it — hand + foot hit together
+    if (hv && pattern.feet[i]) h.classList.add('with-kick');
     el.handsLane.appendChild(h);
 
     const f = document.createElement('div');

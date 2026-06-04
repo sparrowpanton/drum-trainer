@@ -39,62 +39,96 @@ class DrumAudio {
     return this.ctx ? this.ctx.currentTime : 0;
   }
 
-  // Low "bang" — a sine with a fast downward pitch sweep and a quick decay.
+  // Real kick drum — a pitch-swept sine "body" plus a short beater "click"
+  // transient at the attack. The click is what your ear reads as "a real kick."
   kick(time) {
     const ctx = this.ctx;
+
+    // body: 130 Hz dropping to 48 Hz, punchy decay
     const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+    const bodyGain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(150, time);
-    osc.frequency.exponentialRampToValueAtTime(50, time + 0.12);
-    gain.gain.setValueAtTime(0.0001, time);
-    gain.gain.exponentialRampToValueAtTime(1.0, time + 0.005);
-    gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.18);
-    osc.connect(gain).connect(this.master);
+    osc.frequency.setValueAtTime(130, time);
+    osc.frequency.exponentialRampToValueAtTime(48, time + 0.10);
+    bodyGain.gain.setValueAtTime(0.0001, time);
+    bodyGain.gain.exponentialRampToValueAtTime(1.0, time + 0.004);
+    bodyGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.38);
+    osc.connect(bodyGain).connect(this.master);
     osc.start(time);
-    osc.stop(time + 0.2);
+    osc.stop(time + 0.4);
+
+    // beater click: a fast high-passed noise tick
+    const click = ctx.createBufferSource();
+    click.buffer = this.noise;
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 3500;
+    const clickGain = ctx.createGain();
+    clickGain.gain.setValueAtTime(0.55, time);
+    clickGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.02);
+    click.connect(hp).connect(clickGain).connect(this.master);
+    click.start(time);
+    click.stop(time + 0.03);
   }
 
-  // Stick "tap" — short filtered noise burst. pan: -1 (left hand) .. +1 (right).
+  // Real snare — a tonal shell (two triangles) plus the wire "rattle" (filtered
+  // noise). pan: -1 (left hand) .. +1 (right hand).
   tap(time, pan = 0) {
     const ctx = this.ctx;
-    const dur = 0.05;
-    const src = ctx.createBufferSource();
-    src.buffer = this.noise;
-    const bp = ctx.createBiquadFilter();
-    bp.type = 'bandpass';
-    bp.frequency.value = 2200;
-    bp.Q.value = 0.8;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.6, time);
-    gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
 
-    let tail = gain;
+    // shared output (handles pan + level for the whole hit)
+    const out = ctx.createGain();
+    out.gain.value = 0.85;
+    let tail = out;
     if (this.canPan) {
       const panner = ctx.createStereoPanner();
       panner.pan.value = pan;
-      gain.connect(panner);
+      out.connect(panner);
       tail = panner;
     }
-    src.connect(bp).connect(gain);
     tail.connect(this.master);
-    src.start(time);
-    src.stop(time + dur);
+
+    // wires: high-passed noise — the bulk of the snare character
+    const noise = ctx.createBufferSource();
+    noise.buffer = this.noise;
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 1600;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.7, time);
+    noiseGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.13);
+    noise.connect(hp).connect(noiseGain).connect(out);
+    noise.start(time);
+    noise.stop(time + 0.15);
+
+    // shell: two short tones give it body and pitch
+    [180, 270].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, time);
+      g.gain.exponentialRampToValueAtTime(i === 0 ? 0.5 : 0.3, time + 0.003);
+      g.gain.exponentialRampToValueAtTime(0.0001, time + 0.11);
+      o.connect(g).connect(out);
+      o.start(time);
+      o.stop(time + 0.12);
+    });
   }
 
-  // Metronome click — short blip. accent = louder + higher on the downbeat.
+  // Metronome click — a soft, clean tick that sits under the drums.
   click(time, accent = false) {
     const ctx = this.ctx;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'square';
-    osc.frequency.value = accent ? 2000 : 1200;
-    const vol = accent ? 0.28 : 0.16;
+    osc.type = 'triangle';
+    osc.frequency.value = accent ? 1800 : 1300;
+    const vol = accent ? 0.18 : 0.10;
     gain.gain.setValueAtTime(vol, time);
-    gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.025);
     osc.connect(gain).connect(this.master);
     osc.start(time);
-    osc.stop(time + 0.04);
+    osc.stop(time + 0.03);
   }
 
   _makeNoise(dur) {
