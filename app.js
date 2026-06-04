@@ -117,11 +117,17 @@ function renderPattern() {
   el.patternBlurb.textContent = pattern.blurb;
 
   const steps = pattern.hands.length;
+  el.beatNums.innerHTML = '';
   el.handsLane.innerHTML = '';
   el.feetLane.innerHTML = '';
 
   for (let i = 0; i < steps; i++) {
     const beatStart = i % pattern.stepsPerBeat === 0;
+
+    const num = document.createElement('div');
+    num.className = 'num-slot' + (beatStart ? ' beat-start' : '');
+    if (beatStart) num.textContent = i / pattern.stepsPerBeat + 1;
+    el.beatNums.appendChild(num);
 
     const h = document.createElement('div');
     h.className = 'cell hand' + (beatStart ? ' beat-start' : '');
@@ -246,6 +252,7 @@ function selectPattern(id, btn) {
 }
 
 function init() {
+  el.beatNums = $('beatNums');
   el.handsLane = $('handsLane');
   el.feetLane = $('feetLane');
   el.countIn = $('countIn');

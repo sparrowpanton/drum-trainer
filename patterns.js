@@ -25,11 +25,11 @@ const PATTERNS = [
   {
     id: 'single-paradiddle',
     name: 'Single Paradiddle',
-    blurb: 'RLRR LRLL — the foundational sticking rudiment. Hands only.',
+    blurb: 'RLRR LRLL with a steady quarter-note kick. Sticking + feet together.',
     timeSignature: [4, 4],
     stepsPerBeat: 2,
     hands: ['R', 'L', 'R', 'R',  'L', 'R', 'L', 'L'],
-    feet:  [null, null, null, null,  null, null, null, null],
+    feet:  ['K', null, 'K', null,  'K', null, 'K', null],
   },
   {
     id: 'single-stroke-8ths',

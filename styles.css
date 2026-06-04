@@ -74,6 +74,20 @@ body {
 
 .lane-row { display: flex; align-items: center; gap: 12px; }
 .lane-row + .lane-row { margin-top: 12px; }
+.num-row { margin-bottom: 2px; }
+
+/* beat numbers across the top, one per beat, aligned to the downbeat cell */
+.num-lane { display: flex; gap: 6px; flex: 1; }
+.num-slot {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: #B7A98E;
+}
+.num-slot.beat-start { margin-left: 8px; }
+.num-lane .num-slot:first-child { margin-left: 0; }
 
 .lane-label {
   width: 52px;
