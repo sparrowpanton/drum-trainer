@@ -1,0 +1,68 @@
+# 🥁 Drum Play-Along Trainer
+
+A follow-the-bouncing-ball practice tool for drummers. Pick a pattern, set a
+tempo, hit play, and drum along while a bouncing ball walks you across the
+grid. Sesame Street energy, on purpose.
+
+**v1 — the play-along core.** Patterns ship in the code; the click-to-build
+editor is v2.
+
+## Run it
+
+No build step, no server, no dependencies. Just open `index.html` in a browser
+(double-click it, or serve the folder with anything you like). Click **Play** —
+browsers need that one user click before they'll make sound.
+
+- **Tempo** — 40–240 BPM
+- **Length** — auto-stops after the set number of minutes
+- **Count-in** — one bar of clicks before the pattern starts (toggle on/off)
+- **Space bar** — play / stop
+
+## What's in here
+
+| File | Job |
+|------|-----|
+| `index.html` | structure + controls |
+| `styles.css` | the look (the bouncing ball, the grid) |
+| `patterns.js` | **the pattern library + data format** |
+| `audio.js`    | synthesized kick / tap / click voices |
+| `app.js`      | the timing engine + rendering |
+
+## Two things done with care
+
+1. **Timing is on the Web Audio clock, not `setTimeout`.** A lookahead
+   scheduler (Chris Wilson's "A Tale of Two Clocks") wakes up often and
+   schedules notes slightly ahead with sample-accurate audio times, so the
+   metronome never drifts. The visuals read the same clock but can never nudge
+   it. This is the difference between "practiceable" and "useless."
+
+2. **The pattern format is a stable contract.** Every pattern is plain
+   structured data in `patterns.js`. Next week's editor is just a UI that
+   writes to that same shape — no rewrite needed.
+
+## Adding a pattern
+
+Append an object to `PATTERNS` in `patterns.js`:
+
+```js
+{
+  id: 'my-groove',
+  name: 'My Groove',
+  blurb: 'A short description.',
+  timeSignature: [4, 4],
+  stepsPerBeat: 2,                              // 2 = eighths, 4 = sixteenths
+  hands: ['R','L','R','L', 'R','L','R','L'],    // 'R' | 'L' | null (rest)
+  feet:  ['K',null,null,null, 'K',null,null,null], // 'K' | null (rest)
+}
+```
+
+Both lanes must be the same length; that length is the number of grid steps.
+
+## Roadmap
+
+- **v2** — click-to-build pattern editor, save + name your own patterns, grow
+  the shared library.
+
+---
+
+Built by Sparrow + Opus. Bouncing-ball layout after Alejandro's sketch. 🐿️

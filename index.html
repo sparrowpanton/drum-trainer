@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🥁 Drum Play-Along Trainer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <h1>🥁 Drum Play-Along Trainer</h1>
+      <p class="tagline">Follow the bouncing ball.</p>
+    </header>
+
+    <section class="patterns">
+      <div id="patternList" class="pattern-list"></div>
+      <div class="pattern-meta">
+        <h2 id="patternName">—</h2>
+        <p id="patternBlurb">—</p>
+      </div>
+    </section>
+
+    <section id="gridArea" class="grid-area">
+      <div id="ball" class="ball"></div>
+      <div id="countIn" class="count-in"></div>
+
+      <div class="lane-row">
+        <span class="lane-label">Hands</span>
+        <div id="handsLane" class="lane hands-lane"></div>
+      </div>
+      <div class="lane-row">
+        <span class="lane-label">Feet</span>
+        <div id="feetLane" class="lane feet-lane"></div>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div class="control">
+        <label for="tempo">Tempo <span id="tempoVal">90</span> BPM</label>
+        <input type="range" id="tempo" min="40" max="240" step="1" value="90">
+      </div>
+      <div class="control">
+        <label for="duration">Length <span id="durationVal">5</span> min</label>
+        <input type="range" id="duration" min="1" max="30" step="1" value="5">
+      </div>
+      <div class="control toggle">
+        <label><input type="checkbox" id="countInToggle"> Count-in</label>
+        <span class="elapsed">⏱ <span id="elapsed">0:00</span></span>
+      </div>
+      <button id="playBtn" class="play-btn">▶ Play</button>
+    </section>
+
+    <footer class="footer">
+      <span>Press <kbd>space</kbd> to play / stop</span>
+      <a id="repoLink" href="#" target="_blank" rel="noopener">View on GitHub</a>
+    </footer>
+  </main>
+
+  <script src="patterns.js"></script>
+  <script src="audio.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
