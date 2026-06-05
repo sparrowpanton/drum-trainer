@@ -143,6 +143,24 @@ const PATTERNS = [
       null, null, null, null,  'K', null, null, null,  null, null, null, null,  'K', null, null, null,   // bar 2: 2 & 4
     ],
   },
+  {
+    id: 'double-bass-spaced',
+    name: 'Double Bass · Spaced',
+    blurb: 'Metal, spaced: two fast kicks on each beat, then a gap, under steady 8th-note hands. This is a two-feet (or double-pedal) pattern — play the footing and tempo that work for you.',
+    timeSignature: [4, 4],
+    stepsPerBeat: 4,
+    hands: ['R', null, 'L', null,  'R', null, 'L', null,  'R', null, 'L', null,  'R', null, 'L', null],
+    feet:  ['K', 'K', null, null,  'K', 'K', null, null,  'K', 'K', null, null,  'K', 'K', null, null],
+  },
+  {
+    id: 'double-bass-dirty',
+    name: 'Double Bass · Dirty Fast',
+    blurb: 'Dirty continuous double bass — a kick on every 16th, a wall of fast feet under steady 8th-note hands. Two feet. Start slow; speed is the boss fight, not the warm-up.',
+    timeSignature: [4, 4],
+    stepsPerBeat: 4,
+    hands: ['R', null, 'L', null,  'R', null, 'L', null,  'R', null, 'L', null,  'R', null, 'L', null],
+    feet:  ['K', 'K', 'K', 'K',  'K', 'K', 'K', 'K',  'K', 'K', 'K', 'K',  'K', 'K', 'K', 'K'],
+  },
 ];
 
 function getPattern(id) {
