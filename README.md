@@ -1,5 +1,7 @@
 # 🥁 Drum Play-Along Trainer
 
+**▶ Play it now: https://sparrowpanton.github.io/drum-trainer/** (works on phones too)
+
 A play-along practice tool for drummers. Pick a pattern, set a tempo, hit play,
 and drum along while the current letter jumps big and bold across the grid —
 one clear signal at a time. Sesame Street energy, on purpose, and built to be
