@@ -57,6 +57,21 @@
       <button id="playBtn" class="play-btn">▶ Play</button>
     </section>
 
+    <section class="setlist-panel">
+      <div class="setlist-head">
+        <h3>Setlist <span class="hint">— tap ＋ on a pattern to queue it</span></h3>
+        <span id="setlistTotal" class="setlist-total"></span>
+      </div>
+      <p id="setlistEmpty" class="setlist-empty">
+        Your setlist is empty. Set a length, then tap the <b>＋</b> on any pattern above to add it — build your whole session, hit <b>Play Setlist</b>, and just drum. It switches patterns for you.
+      </p>
+      <div id="setlist" class="setlist"></div>
+      <div id="setlistControls" class="setlist-controls" style="display:none">
+        <button id="setlistPlayBtn" class="setlist-play-btn">▶ Play Setlist</button>
+        <button id="setlistClearBtn" class="setlist-clear-btn">Clear</button>
+      </div>
+    </section>
+
     <footer class="footer">
       <span>Press <kbd>space</kbd> to play / stop</span>
       <a id="repoLink" href="https://github.com/sparrowpanton/drum-trainer" target="_blank" rel="noopener">View on GitHub</a>

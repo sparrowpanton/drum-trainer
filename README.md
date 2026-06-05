@@ -18,6 +18,9 @@ browsers need that one user click before they'll make sound.
 - **Length** — auto-stops after the set number of minutes
 - **Count-in** — one bar of clicks before the pattern starts (toggle on/off)
 - **Space bar** — play / stop
+- **Setlist** — tap the ＋ on any pattern to queue it (with the current length),
+  then **Play Setlist** to run them back-to-back hands-free — it auto-switches
+  patterns so you never touch a button mid-practice. Saved between sessions.
 
 ## What's in here
 

@@ -35,6 +35,11 @@ let rafID = null;              // requestAnimationFrame handle
 let noteQueue = [];            // scheduled notes the visual clock hasn't reached
 let activeCellIndex = -1;      // which step is currently lit (the playhead)
 
+// setlist: an ordered queue of { id, name, minutes } played back-to-back
+let setlist = [];
+let setlistMode = false;       // is the current playback a setlist run?
+let setlistIndex = 0;          // which setlist item is playing
+
 const el = {};
 const $ = (id) => document.getElementById(id);
 
@@ -187,15 +192,15 @@ function fmtTime(s) {
 // ---------------------------------------------------------------------------
 // transport
 // ---------------------------------------------------------------------------
-function play() {
-  if (isPlaying) return;
+// Shared playback startup — schedules the CURRENT pattern for durationMin.
+// Used both by solo play and by each leg of a setlist.
+function beginPlay() {
   audio.init();
   audio.resume();
+  clearTimeout(timerID); timerID = null;
+  cancelAnimationFrame(rafID); rafID = null;
 
   isPlaying = true;
-  el.playBtn.textContent = '■ Stop';
-  el.playBtn.classList.add('playing');
-
   noteQueue = [];
   currentStep = 0;
   activeCellIndex = -1;
@@ -213,25 +218,77 @@ function play() {
     stopTime = startAt + durationMin * 60;
   }
 
+  updateTransportUI();
+  renderSetlist();
   scheduler();
   rafID = requestAnimationFrame(draw);
+}
+
+function play() {
+  if (isPlaying) return;
+  setlistMode = false;
+  beginPlay();
+}
+
+// Play the whole setlist hands-free: each pattern for its own minutes, then
+// auto-advance to the next. finish() handles the hand-off.
+function playSetlist() {
+  if (!setlist.length) return;
+  if (isPlaying) stop();
+  setlistMode = true;
+  setlistIndex = 0;
+  applySetlistItem(0);
+  beginPlay();
+}
+
+function applySetlistItem(i) {
+  const item = setlist[i];
+  pattern = getPattern(item.id);
+  durationMin = item.minutes;
+  el.duration.value = durationMin;
+  el.durationVal.textContent = durationMin;
+  highlightPatternButton(item.id);
+  renderPattern();
 }
 
 function stop() {
   if (!isPlaying) return;
   isPlaying = false;
+  setlistMode = false;
+  setlistIndex = 0;
   clearTimeout(timerID); timerID = null;
   cancelAnimationFrame(rafID); rafID = null;
   noteQueue = [];
   countInBeatsLeft = 0;
   stopTime = Infinity;
-  el.playBtn.textContent = '▶ Play';
-  el.playBtn.classList.remove('playing');
   hideCountIn();
   clearActive();
+  updateTransportUI();
+  renderSetlist();
 }
 
-function finish() { stop(); }   // reached the duration limit
+// Reached the current pattern's duration limit. In a setlist, roll to the next
+// leg (with its own count-in); otherwise stop.
+function finish() {
+  if (setlistMode && setlistIndex < setlist.length - 1) {
+    setlistIndex++;
+    applySetlistItem(setlistIndex);
+    beginPlay();
+  } else {
+    stop();
+  }
+}
+
+function updateTransportUI() {
+  const soloPlaying = isPlaying && !setlistMode;
+  const setlistPlaying = isPlaying && setlistMode;
+  el.playBtn.textContent = soloPlaying ? '■ Stop' : '▶ Play';
+  el.playBtn.classList.toggle('playing', soloPlaying);
+  if (el.setlistPlayBtn) {
+    el.setlistPlayBtn.textContent = setlistPlaying ? '■ Stop' : '▶ Play Setlist';
+    el.setlistPlayBtn.classList.toggle('playing', setlistPlaying);
+  }
+}
 
 // ---------------------------------------------------------------------------
 // controls
@@ -239,21 +296,115 @@ function finish() { stop(); }   // reached the duration limit
 function buildPatternButtons() {
   el.patternList.innerHTML = '';
   PATTERNS.forEach(p => {
+    const chip = document.createElement('div');
+    chip.className = 'pattern-chip';
+
     const b = document.createElement('button');
     b.className = 'pattern-btn';
     b.textContent = p.name;
     if (p.id === pattern.id) b.classList.add('selected');
-    b.addEventListener('click', () => selectPattern(p.id, b));
-    el.patternList.appendChild(b);
+    b.addEventListener('click', () => selectPattern(p.id));
+
+    const add = document.createElement('button');
+    add.className = 'pattern-add';
+    add.textContent = '＋';
+    add.title = 'Add to setlist';
+    add.setAttribute('aria-label', 'Add ' + p.name + ' to setlist');
+    add.addEventListener('click', () => addToSetlist(p.id));
+
+    chip.append(b, add);
+    el.patternList.appendChild(chip);
   });
 }
 
-function selectPattern(id, btn) {
+function highlightPatternButton(id) {
+  const btns = el.patternList.querySelectorAll('.pattern-btn');
+  const idx = PATTERNS.findIndex(p => p.id === id);
+  btns.forEach((b, i) => b.classList.toggle('selected', i === idx));
+}
+
+function selectPattern(id) {
   if (isPlaying) stop();
   pattern = getPattern(id);
-  [...el.patternList.children].forEach(c => c.classList.remove('selected'));
-  btn.classList.add('selected');
+  highlightPatternButton(id);
   renderPattern();
+}
+
+// ---------------------------------------------------------------------------
+// setlist — queue patterns, then play them back-to-back hands-free
+// ---------------------------------------------------------------------------
+const SETLIST_KEY = 'drumTrainer.setlist';
+
+function addToSetlist(id) {
+  const p = getPattern(id);
+  setlist.push({ id, name: p.name, minutes: durationMin });
+  saveSetlist();
+  renderSetlist();
+}
+
+function removeFromSetlist(i) {
+  setlist.splice(i, 1);
+  saveSetlist();
+  renderSetlist();
+}
+
+function clearSetlist() {
+  if (isPlaying && setlistMode) stop();
+  setlist = [];
+  saveSetlist();
+  renderSetlist();
+}
+
+function saveSetlist() {
+  try { localStorage.setItem(SETLIST_KEY, JSON.stringify(setlist)); } catch (e) {}
+}
+
+function loadSetlist() {
+  try {
+    const raw = localStorage.getItem(SETLIST_KEY);
+    if (!raw) return;
+    setlist = JSON.parse(raw)
+      .filter(x => PATTERNS.some(p => p.id === x.id))
+      .map(x => ({ id: x.id, name: getPattern(x.id).name, minutes: x.minutes || 5 }));
+  } catch (e) { setlist = []; }
+}
+
+function renderSetlist() {
+  el.setlist.innerHTML = '';
+  const has = setlist.length > 0;
+  el.setlistEmpty.style.display = has ? 'none' : '';
+  el.setlistControls.style.display = has ? '' : 'none';
+  if (!has) { el.setlistTotal.textContent = ''; return; }
+
+  setlist.forEach((item, i) => {
+    const row = document.createElement('div');
+    const isCurrent = isPlaying && setlistMode && i === setlistIndex;
+    row.className = 'setlist-item' + (isCurrent ? ' current' : '');
+
+    const num = document.createElement('span');
+    num.className = 'sl-num';
+    num.textContent = isCurrent ? '▶' : (i + 1);
+
+    const name = document.createElement('span');
+    name.className = 'sl-name';
+    name.textContent = item.name;
+
+    const mins = document.createElement('span');
+    mins.className = 'sl-mins';
+    mins.textContent = item.minutes + ' min';
+
+    const rm = document.createElement('button');
+    rm.className = 'sl-remove';
+    rm.textContent = '✕';
+    rm.title = 'Remove';
+    rm.addEventListener('click', () => removeFromSetlist(i));
+
+    row.append(num, name, mins, rm);
+    el.setlist.appendChild(row);
+  });
+
+  const total = setlist.reduce((s, x) => s + x.minutes, 0);
+  el.setlistTotal.textContent = total + ' min total';
 }
 
 function init() {
@@ -272,9 +423,17 @@ function init() {
   el.patternBlurb = $('patternBlurb');
   el.patternList = $('patternList');
   el.elapsed = $('elapsed');
+  el.setlist = $('setlist');
+  el.setlistEmpty = $('setlistEmpty');
+  el.setlistControls = $('setlistControls');
+  el.setlistTotal = $('setlistTotal');
+  el.setlistPlayBtn = $('setlistPlayBtn');
+  el.setlistClearBtn = $('setlistClearBtn');
 
   buildPatternButtons();
   renderPattern();
+  loadSetlist();
+  renderSetlist();
 
   el.tempo.value = tempo; el.tempoVal.textContent = tempo;
   el.duration.value = durationMin; el.durationVal.textContent = durationMin;
@@ -291,6 +450,8 @@ function init() {
   });
   el.countInToggle.addEventListener('change', () => { countInOn = el.countInToggle.checked; });
   el.playBtn.addEventListener('click', () => (isPlaying ? stop() : play()));
+  el.setlistPlayBtn.addEventListener('click', () => ((isPlaying && setlistMode) ? stop() : playSetlist()));
+  el.setlistClearBtn.addEventListener('click', clearSetlist);
 
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') { e.preventDefault(); isPlaying ? stop() : play(); }
