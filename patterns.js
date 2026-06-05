@@ -98,6 +98,21 @@ const PATTERNS = [
     hands: ['R', 'L', 'R', 'R',  'L', 'R', 'L', 'L',  'R', 'L', 'R', 'R',  'L', 'R', 'L', 'L'],
     feet:  ['K', null, 'K', 'K',  null, 'K', null, null,  'K', null, 'K', 'K',  null, 'K', null, null],
   },
+  {
+    id: 'sixteenth-triplets',
+    name: '16th-Note Triplets',
+    blurb: 'A new feel: six even strokes per beat (two triplets — RLRLRL), with the kick on each beat to hold the pulse. Count it in 6. (Foot read from the bold letters — tweak if needed.)',
+    timeSignature: [4, 4],
+    stepsPerBeat: 6,
+    hands: [
+      'R', 'L', 'R', 'L', 'R', 'L',  'R', 'L', 'R', 'L', 'R', 'L',
+      'R', 'L', 'R', 'L', 'R', 'L',  'R', 'L', 'R', 'L', 'R', 'L',
+    ],
+    feet: [
+      'K', null, null, null, null, null,  'K', null, null, null, null, null,
+      'K', null, null, null, null, null,  'K', null, null, null, null, null,
+    ],
+  },
 ];
 
 function getPattern(id) {
