@@ -134,7 +134,9 @@ body {
 }
 .sl-remove:hover { opacity: 1; color: var(--ball); }
 
-.setlist-controls { display: flex; gap: 10px; margin-top: 14px; }
+.setlist-controls { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+.setlist-loop { display: flex; align-items: center; gap: 5px; font-size: 0.9rem; font-weight: 600; opacity: 0.75; cursor: pointer; }
+.setlist-loop input { accent-color: var(--kick); }
 .setlist-play-btn {
   font-family: inherit;
   font-size: 1rem;

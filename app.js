@@ -39,6 +39,7 @@ let activeCellIndex = -1;      // which step is currently lit (the playhead)
 let setlist = [];
 let setlistMode = false;       // is the current playback a setlist run?
 let setlistIndex = 0;          // which setlist item is playing
+let setlistLoop = false;       // repeat the whole setlist when it ends?
 
 const el = {};
 const $ = (id) => document.getElementById(id);
@@ -278,8 +279,11 @@ function applySetlistItem(i) {
   const item = setlist[i];
   pattern = getPattern(item.id);
   durationMin = item.minutes;
+  tempo = item.tempo || tempo;
   el.duration.value = durationMin;
   el.durationVal.textContent = durationMin;
+  el.tempo.value = tempo;
+  el.tempoVal.textContent = tempo;
   highlightPatternButton(item.id);
   renderPattern();
 }
@@ -306,6 +310,10 @@ function finish() {
   if (setlistMode && setlistIndex < setlist.length - 1) {
     setlistIndex++;
     applySetlistItem(setlistIndex);
+    beginPlay();
+  } else if (setlistMode && setlistLoop && setlist.length) {
+    setlistIndex = 0;             // loop back to the top
+    applySetlistItem(0);
     beginPlay();
   } else {
     stop();
@@ -370,7 +378,9 @@ const SETLIST_KEY = 'drumTrainer.setlist';
 
 function addToSetlist(id) {
   const p = getPattern(id);
-  setlist.push({ id, name: p.name, minutes: durationMin });
+  // capture the CURRENT tempo + length, so adding the same pattern at 60/90/120
+  // builds a tempo ramp
+  setlist.push({ id, name: p.name, minutes: durationMin, tempo });
   saveSetlist();
   renderSetlist();
 }
@@ -398,7 +408,7 @@ function loadSetlist() {
     if (!raw) return;
     setlist = JSON.parse(raw)
       .filter(x => PATTERNS.some(p => p.id === x.id))
-      .map(x => ({ id: x.id, name: getPattern(x.id).name, minutes: x.minutes || 5 }));
+      .map(x => ({ id: x.id, name: getPattern(x.id).name, minutes: x.minutes || 5, tempo: x.tempo || 90 }));
   } catch (e) { setlist = []; }
 }
 
@@ -424,7 +434,7 @@ function renderSetlist() {
 
     const mins = document.createElement('span');
     mins.className = 'sl-mins';
-    mins.textContent = item.minutes + ' min';
+    mins.textContent = item.tempo + ' bpm · ' + item.minutes + ' min';
 
     const rm = document.createElement('button');
     rm.className = 'sl-remove';
@@ -465,6 +475,7 @@ function init() {
   el.setlistTotal = $('setlistTotal');
   el.setlistPlayBtn = $('setlistPlayBtn');
   el.setlistClearBtn = $('setlistClearBtn');
+  el.setlistLoop = $('setlistLoop');
 
   buildPatternButtons();
   renderPattern();
@@ -488,6 +499,7 @@ function init() {
   el.playBtn.addEventListener('click', () => (isPlaying ? stop() : play()));
   el.setlistPlayBtn.addEventListener('click', () => ((isPlaying && setlistMode) ? stop() : playSetlist()));
   el.setlistClearBtn.addEventListener('click', clearSetlist);
+  el.setlistLoop.addEventListener('change', () => { setlistLoop = el.setlistLoop.checked; });
 
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space') { e.preventDefault(); isPlaying ? stop() : play(); }
