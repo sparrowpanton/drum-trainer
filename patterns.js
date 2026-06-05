@@ -99,6 +99,15 @@ const PATTERNS = [
     feet:  ['K', null, 'K', 'K',  null, 'K', null, null,  'K', null, 'K', 'K',  null, 'K', null, null],
   },
   {
+    id: 'doubles',
+    name: 'Doubles',
+    blurb: 'Double strokes — RRLL at 16ths. Kick on each beat (the first R of each double), so the foot stays in singles. Hands group in 2s, foot in 1s — they pull against each other.',
+    timeSignature: [4, 4],
+    stepsPerBeat: 4,
+    hands: ['R', 'R', 'L', 'L',  'R', 'R', 'L', 'L',  'R', 'R', 'L', 'L',  'R', 'R', 'L', 'L'],
+    feet:  ['K', null, null, null,  'K', null, null, null,  'K', null, null, null,  'K', null, null, null],
+  },
+  {
     id: 'sixteenth-triplets',
     name: '16th-Note Triplets',
     blurb: 'A new feel: six even strokes per beat (two triplets — RLRLRL), with the kick on each beat to hold the pulse. Count it in 6. (Foot read from the bold letters — tweak if needed.)',
@@ -111,6 +120,27 @@ const PATTERNS = [
     feet: [
       'K', null, null, null, null, null,  'K', null, null, null, null, null,
       'K', null, null, null, null, null,  'K', null, null, null, null, null,
+    ],
+  },
+  {
+    id: 'off-the-beat',
+    name: 'Off the Beat',
+    blurb: 'Original — 16th-note hands with the kick on every "and" (the upbeats). Single kicks landing in the gaps between beats. Funky, and it trains the foot to skip the downbeat.',
+    timeSignature: [4, 4],
+    stepsPerBeat: 4,
+    hands: SIXTEENTH_HANDS,
+    feet:  [null, null, 'K', null,  null, null, 'K', null,  null, null, 'K', null,  null, null, 'K', null],
+  },
+  {
+    id: 'staircase',
+    name: 'Staircase',
+    blurb: 'Original, two bars: kick on 1 & 3, then on 2 & 4. The foot walks to a new spot each bar — feel it move around the beat. All single kicks.',
+    timeSignature: [4, 4],
+    stepsPerBeat: 4,
+    hands: [...SIXTEENTH_HANDS, ...SIXTEENTH_HANDS],
+    feet: [
+      'K', null, null, null,  null, null, null, null,  'K', null, null, null,  null, null, null, null,   // bar 1: 1 & 3
+      null, null, null, null,  'K', null, null, null,  null, null, null, null,  'K', null, null, null,   // bar 2: 2 & 4
     ],
   },
 ];
