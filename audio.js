@@ -78,7 +78,7 @@ class DrumAudio {
 
     // shared output (handles pan + level for the whole hit)
     const out = ctx.createGain();
-    out.gain.value = 0.85;
+    out.gain.value = 1.0;
     let tail = out;
     if (this.canPan) {
       const panner = ctx.createStereoPanner();

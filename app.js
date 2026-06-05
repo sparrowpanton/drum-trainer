@@ -22,6 +22,7 @@ let pattern = PATTERNS[0];
 let tempo = 70;                // BPM (gentle default — slide up as it locks in)
 let durationMin = 5;           // minutes
 let countInOn = true;
+let clickOn = false;           // metronome during play (off by default — drums carry it)
 
 let isPlaying = false;
 let currentStep = 0;           // index into the pattern lanes
@@ -84,8 +85,8 @@ function scheduleStep(step, time) {
 
   if (pattern.feet[step]) audio.kick(time);
 
-  // metronome on every beat boundary; accent each bar's downbeat
-  if (step % pattern.stepsPerBeat === 0) {
+  // optional metronome (off by default) — the drum hits ARE the sound now
+  if (clickOn && step % pattern.stepsPerBeat === 0) {
     const stepsPerBar = pattern.stepsPerBeat * pattern.timeSignature[0];
     audio.click(time, step % stepsPerBar === 0);
   }
@@ -127,6 +128,7 @@ function draw() {
       showCountIn(n.count);
     } else {
       setActiveCell(n.step);   // the current letter swells — that's the playhead
+      animateDrummer(n.step);  // sticks strike / foot taps in time with the note
       hideCountIn();
     }
   }
@@ -152,6 +154,7 @@ function renderPattern() {
 
   el.gridArea.classList.toggle('dense', steps > 16);   // shrink cells for long patterns
   el.cymbalRow.style.display = kit ? '' : 'none';
+  if (el.dmCymbal) el.dmCymbal.style.display = kit ? '' : 'none';   // cymbal only on kit grooves
   el.handsLabel.textContent = kit ? 'Snare' : 'Hands';
 
   el.beatNums.innerHTML = '';
@@ -207,6 +210,29 @@ function clearActive() {
     lanes().forEach(lane => lane.children[activeCellIndex]?.classList.remove('active'));
   }
   activeCellIndex = -1;
+}
+
+// re-fire a one-shot CSS animation (remove class, force reflow, re-add)
+function reTrigger(node, cls) {
+  if (!node) return;
+  node.classList.remove(cls);
+  void node.offsetWidth;
+  node.classList.add(cls);
+}
+
+// strike the sticks / flash the cymbal / tap the foot for this step's hits
+function animateDrummer(step) {
+  const mid = midLane();
+  const h = mid && mid[step];
+  if (h === 'R') reTrigger(el.dmStickR, 'hit');
+  else if (h === 'L') reTrigger(el.dmStickL, 'hit');
+
+  if (pattern.cymbal && pattern.cymbal[step]) {
+    reTrigger(el.dmCymbal, 'flash');
+    reTrigger(el.dmStickR, 'hit');   // cymbal is the right-hand reach
+  }
+
+  if (pattern.feet[step]) reTrigger(el.dmFoot, 'tap');
 }
 
 function showCountIn(n) { el.countIn.textContent = n; el.countIn.classList.add('show'); }
@@ -465,6 +491,11 @@ function init() {
   el.duration = $('duration');
   el.durationVal = $('durationVal');
   el.countInToggle = $('countInToggle');
+  el.clickToggle = $('clickToggle');
+  el.dmStickL = $('dmStickL');
+  el.dmStickR = $('dmStickR');
+  el.dmCymbal = $('dmCymbal');
+  el.dmFoot = $('dmFoot');
   el.patternName = $('patternName');
   el.patternBlurb = $('patternBlurb');
   el.patternList = $('patternList');
@@ -485,6 +516,7 @@ function init() {
   el.tempo.value = tempo; el.tempoVal.textContent = tempo;
   el.duration.value = durationMin; el.durationVal.textContent = durationMin;
   el.countInToggle.checked = countInOn;
+  el.clickToggle.checked = clickOn;
 
   el.tempo.addEventListener('input', () => {
     tempo = +el.tempo.value;
@@ -496,6 +528,7 @@ function init() {
     if (isPlaying && countInBeatsLeft === 0) stopTime = patternStartTime + durationMin * 60;
   });
   el.countInToggle.addEventListener('change', () => { countInOn = el.countInToggle.checked; });
+  el.clickToggle.addEventListener('change', () => { clickOn = el.clickToggle.checked; });
   el.playBtn.addEventListener('click', () => (isPlaying ? stop() : play()));
   el.setlistPlayBtn.addEventListener('click', () => ((isPlaying && setlistMode) ? stop() : playSetlist()));
   el.setlistClearBtn.addEventListener('click', clearSetlist);
