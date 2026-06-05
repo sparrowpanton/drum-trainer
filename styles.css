@@ -157,6 +157,22 @@ body {
 }
 .cell.foot.active::after { font-size: 2rem; }
 
+/* dense mode — long (multi-bar) patterns: smaller cells so they all fit + read */
+.grid-area.dense .lane,
+.grid-area.dense .num-lane { gap: 4px; }
+.grid-area.dense .cell {
+  aspect-ratio: auto;
+  height: 50px;
+  font-size: 1rem;
+  border-radius: 9px;
+}
+.grid-area.dense .cell.beat-start,
+.grid-area.dense .num-slot.beat-start { margin-left: 6px; }
+.grid-area.dense .num-slot { font-size: 1rem; }
+.grid-area.dense .cell.foot.kick::after { font-size: 1.05rem; }
+.grid-area.dense .cell.active { font-size: 1.7rem; }
+.grid-area.dense .cell.foot.active::after { font-size: 1.4rem; }
+
 /* ---- count-in overlay ---- */
 .count-in {
   position: absolute;

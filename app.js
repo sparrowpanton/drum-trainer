@@ -61,8 +61,11 @@ function scheduleStep(step, time) {
 
   if (pattern.feet[step]) audio.kick(time);
 
-  // metronome on every beat boundary; accent the top of the bar
-  if (step % pattern.stepsPerBeat === 0) audio.click(time, step === 0);
+  // metronome on every beat boundary; accent each bar's downbeat
+  if (step % pattern.stepsPerBeat === 0) {
+    const stepsPerBar = pattern.stepsPerBeat * pattern.timeSignature[0];
+    audio.click(time, step % stepsPerBar === 0);
+  }
 }
 
 function scheduler() {
@@ -117,6 +120,7 @@ function renderPattern() {
   el.patternBlurb.textContent = pattern.blurb;
 
   const steps = pattern.hands.length;
+  el.gridArea.classList.toggle('dense', steps > 16);   // shrink cells for long patterns
   el.beatNums.innerHTML = '';
   el.handsLane.innerHTML = '';
   el.feetLane.innerHTML = '';
@@ -126,7 +130,8 @@ function renderPattern() {
 
     const num = document.createElement('div');
     num.className = 'num-slot' + (beatStart ? ' beat-start' : '');
-    if (beatStart) num.textContent = i / pattern.stepsPerBeat + 1;
+    // numbers reset per bar: 1 2 3 4 / 1 2 3 4 ...
+    if (beatStart) num.textContent = (i / pattern.stepsPerBeat) % pattern.timeSignature[0] + 1;
     el.beatNums.appendChild(num);
 
     const h = document.createElement('div');
@@ -252,6 +257,7 @@ function selectPattern(id, btn) {
 }
 
 function init() {
+  el.gridArea = $('gridArea');
   el.beatNums = $('beatNums');
   el.handsLane = $('handsLane');
   el.feetLane = $('feetLane');

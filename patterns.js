@@ -23,6 +23,21 @@
 
 const PATTERNS = [
   {
+    id: 'quarters-to-eighths',
+    name: 'Quarters → Eighths',
+    blurb: '16th-note single strokes throughout. Bar 1: kick on each beat. Bar 2: kick on every eighth. Loops — your feet double up. (Alejandro / Drumeo)',
+    timeSignature: [4, 4],
+    stepsPerBeat: 4,
+    hands: [
+      'R', 'L', 'R', 'L',  'R', 'L', 'R', 'L',  'R', 'L', 'R', 'L',  'R', 'L', 'R', 'L',   // bar 1
+      'R', 'L', 'R', 'L',  'R', 'L', 'R', 'L',  'R', 'L', 'R', 'L',  'R', 'L', 'R', 'L',   // bar 2
+    ],
+    feet: [
+      'K', null, null, null,  'K', null, null, null,  'K', null, null, null,  'K', null, null, null,   // bar 1: quarters
+      'K', null, 'K', null,   'K', null, 'K', null,   'K', null, 'K', null,   'K', null, 'K', null,    // bar 2: eighths
+    ],
+  },
+  {
     id: 'single-paradiddle',
     name: 'Single Paradiddle',
     blurb: 'RLRR LRLL with a steady quarter-note kick. Sticking + feet together.',
