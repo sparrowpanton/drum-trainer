@@ -82,12 +82,21 @@ const PATTERNS = [
   },
   {
     id: 'single-paradiddle',
-    name: 'Single Paradiddle',
-    blurb: 'A hand rudiment for variety: RLRR LRLL with a steady quarter-note kick.',
+    name: 'Paradiddle · Kick on beats',
+    blurb: 'The gentle paradiddle: RLRR LRLL with a steady quarter-note kick.',
     timeSignature: [4, 4],
     stepsPerBeat: 2,
     hands: ['R', 'L', 'R', 'R',  'L', 'R', 'L', 'L'],
     feet:  ['K', null, 'K', null,  'K', null, 'K', null],
+  },
+  {
+    id: 'paradiddle-kick-every-r',
+    name: 'Paradiddle · Kick every R',
+    blurb: 'The complex one: two paradiddles a bar (RLRR LRLL twice) at 16ths, kick on every R. The foot goes lumpy on the RR — that\'s the point. Right + foot together, left alone.',
+    timeSignature: [4, 4],
+    stepsPerBeat: 4,
+    hands: ['R', 'L', 'R', 'R',  'L', 'R', 'L', 'L',  'R', 'L', 'R', 'R',  'L', 'R', 'L', 'L'],
+    feet:  ['K', null, 'K', 'K',  null, 'K', null, null,  'K', null, 'K', 'K',  null, 'K', null, null],
   },
 ];
 
