@@ -62,6 +62,11 @@ Append an object to `PATTERNS` in `patterns.js`:
 
 Both lanes must be the same length; that length is the number of grid steps.
 
+**Kit patterns** use three voices instead of pad sticking — give the pattern
+`cymbal` and `snare` arrays (each `'R' | 'L' | null`) instead of `hands`, plus
+the usual `feet`. The grid then shows Cymbal / Snare / Feet lanes, so you can
+watch a hand travel between the cymbal and the snare.
+
 ## Roadmap
 
 - **v2** — click-to-build pattern editor, save + name your own patterns, grow

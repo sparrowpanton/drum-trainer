@@ -161,6 +161,28 @@ const PATTERNS = [
     hands: ['R', null, 'L', null,  'R', null, 'L', null,  'R', null, 'L', null,  'R', null, 'L', null],
     feet:  ['K', 'K', 'K', 'K',  'K', 'K', 'K', 'K',  'K', 'K', 'K', 'K',  'K', 'K', 'K', 'K'],
   },
+
+  // --- KIT patterns: three voices (cymbal / snare / kick) instead of pad sticking ---
+  {
+    id: 'kit-rock-beat',
+    name: 'Rock Beat (kit)',
+    blurb: 'Your first kit groove: right hand rides the cymbal in 8ths, left hand on the snare on 2 & 4, kick on 1 & 3. Three voices at once — the foundation of nearly every song.',
+    timeSignature: [4, 4],
+    stepsPerBeat: 2,
+    cymbal: ['R', 'R', 'R', 'R',  'R', 'R', 'R', 'R'],
+    snare:  [null, null, 'L', null,  null, null, 'L', null],
+    feet:   ['K', null, null, null,  'K', null, null, null],
+  },
+  {
+    id: 'kit-rh-across',
+    name: 'Right Hand Across',
+    blurb: 'Just the right hand, travelling: cymbal on the beats, snare on the "ands" — the same R hand moving back and forth across the kit. Foot keeps the pulse. Build the move slowly.',
+    timeSignature: [4, 4],
+    stepsPerBeat: 2,
+    cymbal: ['R', null, 'R', null,  'R', null, 'R', null],
+    snare:  [null, 'R', null, 'R',  null, 'R', null, 'R'],
+    feet:   ['K', null, 'K', null,  'K', null, 'K', null],
+  },
 ];
 
 function getPattern(id) {

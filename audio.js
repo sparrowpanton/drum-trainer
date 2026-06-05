@@ -116,6 +116,32 @@ class DrumAudio {
     });
   }
 
+  // Cymbal / hi-hat — a short, bright high-passed noise "tsst". pan by hand.
+  hihat(time, pan = 0) {
+    const ctx = this.ctx;
+    const dur = 0.05;
+    const src = ctx.createBufferSource();
+    src.buffer = this.noise;
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 8000;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.32, time);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+    let tail = gain;
+    if (this.canPan) {
+      const panner = ctx.createStereoPanner();
+      panner.pan.value = pan;
+      gain.connect(panner);
+      tail = panner;
+    }
+    src.connect(hp).connect(gain);
+    tail.connect(this.master);
+    src.start(time);
+    src.stop(time + dur);
+  }
+
   // Metronome click — a soft, clean tick that sits under the drums.
   click(time, accent = false) {
     const ctx = this.ctx;

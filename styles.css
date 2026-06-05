@@ -235,6 +235,13 @@ body {
 .cell.hand.right { background: var(--right); }
 .cell.hand.left  { background: var(--left); }
 
+/* cymbal lane — gold "metal" cells with the R/L hand letter, so you can watch
+   the right hand travel between the cymbal (gold) and the snare (below) */
+.cell.cymbal.hit {
+  background: radial-gradient(circle at 50% 35%, #FFE082, #FFB300);
+  color: #5A3E00;
+}
+
 /* hand + foot land together: the letter goes dark + heavier, with a bar
    along the bottom edge tying it down to the kick beneath it */
 .cell.hand.with-kick {

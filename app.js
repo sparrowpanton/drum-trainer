@@ -53,16 +53,33 @@ const beatsPerBar = () => pattern.timeSignature[0];
 // ---------------------------------------------------------------------------
 // scheduler — the only thing allowed to touch the audio clock for timing
 // ---------------------------------------------------------------------------
+// total steps in the current pattern, whatever lanes it uses
+function patternSteps() {
+  return (pattern.cymbal || pattern.snare || pattern.hands).length;
+}
+// the middle lane: snare for kit patterns, hands for pad patterns
+function midLane() {
+  return pattern.snare || pattern.hands;
+}
+
 function advanceStep() {
   nextNoteTime += secondsPerStep();
-  currentStep = (currentStep + 1) % pattern.hands.length;
+  currentStep = (currentStep + 1) % patternSteps();
 }
 
 function scheduleStep(step, time) {
   noteQueue.push({ step, time });
 
-  const h = pattern.hands[step];
-  if (h) audio.tap(time, h === 'R' ? 0.5 : -0.5);   // right pans right, left pans left
+  if (pattern.cymbal) {
+    const c = pattern.cymbal[step];
+    if (c) audio.hihat(time, c === 'R' ? 0.4 : -0.4);
+  }
+
+  const mid = midLane();
+  if (mid) {
+    const m = mid[step];
+    if (m) audio.tap(time, m === 'R' ? 0.5 : -0.5);   // right pans right, left pans left
+  }
 
   if (pattern.feet[step]) audio.kick(time);
 
@@ -120,18 +137,30 @@ function draw() {
 // ---------------------------------------------------------------------------
 // rendering
 // ---------------------------------------------------------------------------
+// the lanes we sweep for the active-cell highlight
+function lanes() { return [el.cymbalLane, el.handsLane, el.feetLane]; }
+
 function renderPattern() {
   el.patternName.textContent = pattern.name;
   el.patternBlurb.textContent = pattern.blurb;
 
-  const steps = pattern.hands.length;
+  const kit = !!(pattern.cymbal || pattern.snare);   // kit = cymbal/snare/foot; pad = hands/foot
+  const steps = patternSteps();
+  const cym = pattern.cymbal || [];
+  const mid = midLane() || [];
+
   el.gridArea.classList.toggle('dense', steps > 16);   // shrink cells for long patterns
+  el.cymbalRow.style.display = kit ? '' : 'none';
+  el.handsLabel.textContent = kit ? 'Snare' : 'Hands';
+
   el.beatNums.innerHTML = '';
+  el.cymbalLane.innerHTML = '';
   el.handsLane.innerHTML = '';
   el.feetLane.innerHTML = '';
 
   for (let i = 0; i < steps; i++) {
     const beatStart = i % pattern.stepsPerBeat === 0;
+    const hasKick = !!pattern.feet[i];
 
     const num = document.createElement('div');
     num.className = 'num-slot' + (beatStart ? ' beat-start' : '');
@@ -139,17 +168,24 @@ function renderPattern() {
     if (beatStart) num.textContent = (i / pattern.stepsPerBeat) % pattern.timeSignature[0] + 1;
     el.beatNums.appendChild(num);
 
+    // cymbal lane (kit patterns only)
+    const c = document.createElement('div');
+    c.className = 'cell cymbal' + (beatStart ? ' beat-start' : '');
+    const cv = cym[i];
+    if (cv) { c.classList.add('hit'); c.textContent = cv; if (hasKick) c.classList.add('with-kick'); }
+    el.cymbalLane.appendChild(c);
+
+    // snare (kit) / hands (pad) lane
     const h = document.createElement('div');
     h.className = 'cell hand' + (beatStart ? ' beat-start' : '');
-    const hv = pattern.hands[i];
-    if (hv) { h.classList.add(hv === 'R' ? 'right' : 'left'); h.textContent = hv; }
-    // when a kick lands under this hand, mark it — hand + foot hit together
-    if (hv && pattern.feet[i]) h.classList.add('with-kick');
+    const hv = mid[i];
+    if (hv) { h.classList.add(hv === 'R' ? 'right' : 'left'); h.textContent = hv; if (hasKick) h.classList.add('with-kick'); }
     el.handsLane.appendChild(h);
 
+    // foot / kick lane
     const f = document.createElement('div');
     f.className = 'cell foot' + (beatStart ? ' beat-start' : '');
-    if (pattern.feet[i]) f.classList.add('kick');
+    if (hasKick) f.classList.add('kick');
     el.feetLane.appendChild(f);
   }
 
@@ -158,19 +194,16 @@ function renderPattern() {
 
 function setActiveCell(step) {
   if (activeCellIndex === step) return;
-  if (activeCellIndex >= 0) {
-    el.handsLane.children[activeCellIndex]?.classList.remove('active');
-    el.feetLane.children[activeCellIndex]?.classList.remove('active');
-  }
-  el.handsLane.children[step]?.classList.add('active');
-  el.feetLane.children[step]?.classList.add('active');
+  lanes().forEach(lane => {
+    if (activeCellIndex >= 0) lane.children[activeCellIndex]?.classList.remove('active');
+    lane.children[step]?.classList.add('active');
+  });
   activeCellIndex = step;
 }
 
 function clearActive() {
   if (activeCellIndex >= 0) {
-    el.handsLane.children[activeCellIndex]?.classList.remove('active');
-    el.feetLane.children[activeCellIndex]?.classList.remove('active');
+    lanes().forEach(lane => lane.children[activeCellIndex]?.classList.remove('active'));
   }
   activeCellIndex = -1;
 }
@@ -410,6 +443,9 @@ function renderSetlist() {
 function init() {
   el.gridArea = $('gridArea');
   el.beatNums = $('beatNums');
+  el.cymbalRow = $('cymbalRow');
+  el.cymbalLane = $('cymbalLane');
+  el.handsLabel = $('handsLabel');
   el.handsLane = $('handsLane');
   el.feetLane = $('feetLane');
   el.countIn = $('countIn');
