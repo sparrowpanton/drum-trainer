@@ -19,7 +19,7 @@ const SCHEDULE_AHEAD = 0.10;   // seconds of audio scheduled in advance
 
 // --- state ---
 let pattern = PATTERNS[0];
-let tempo = 90;                // BPM
+let tempo = 70;                // BPM (gentle default — slide up as it locks in)
 let durationMin = 5;           // minutes
 let countInOn = true;
 
